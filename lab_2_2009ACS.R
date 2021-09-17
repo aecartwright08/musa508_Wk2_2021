@@ -17,6 +17,7 @@ library(tidyverse)
 library(tidycensus)
 library(sf)
 library(kableExtra)
+library(viridis)
 
 options(scipen=999)
 options(tigris_class = "sf")
@@ -72,6 +73,13 @@ qBr <- function(df, variable, rnd) {
     as.character(formatC(quantile(df[[variable]]), digits = 3),
                  c(.01,.2,.4,.6,.8), na.rm=T)
   }
+}
+
+# quick ggplot() function
+
+quickG <- function(dataset) {
+  ggplot() +
+    geom_sf(data = dataset)
 }
 
 q5 <- function(variable) {as.factor(ntile(variable, 5))}
@@ -221,7 +229,7 @@ allTracts <- rbind(tracts09,tracts17)
 
 septaStops <- 
   rbind(
-    st_read("https://opendata.arcgis.com/datasets/8c6e2575c8ad46eb887e6bb35825e1a6_0.geojson") %>% 
+    st_read("https://opendata.arcgis.com/datasets/8c6e2575c8ad46eb887e6bb35825e1a6_0.geojson") %>%
       mutate(Line = "El") %>%
       select(Station, Line),
     st_read("https://opendata.arcgis.com/datasets/2e9037fd5bef406488ffe5bb67d21312_0.geojson") %>%
@@ -308,6 +316,17 @@ selectCentroids <-
 # Exercise - Can you create a small multiple map of the three types of operations?
 # Consult the text for some operations you can try
 # This is to be done in breakout groups
+
+threeSpatial <-
+  rbind(clip, selection, selectCentroids)
+
+ggplot() +
+  geom_sf(data=st_union(tracts09)) +
+  geom_sf(data = threeSpatial, aes(fill = TotalPop)) +
+  scale_fill_viridis(option = "plasma") +
+  facet_wrap(~Selection_Type) + 
+  labs(caption = "Figure 2.6") +
+  mapTheme()
 
 # ---- Indicator Maps ----
 
